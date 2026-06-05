@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ytGUI — YouTube Downloader</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+
+  <!-- Disclaimer Modal (first launch) -->
+  <div id="disclaimer-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>⚠️ Yasal Uyarı</h2>
+      <div class="modal-body">
+        <p><strong>Bu uygulama eğitim amaçlıdır.</strong></p>
+        <p>
+          ytGUI, YouTube ve diğer platformlardan içerik indirmek için
+          <em>yt-dlp</em> aracını kullanır. Bu yazılımı kullanarak:
+        </p>
+        <ul>
+          <li>Sadece telif hakkı <strong>size ait olan</strong> veya
+            <strong>indirme izniniz bulunan</strong> içerikleri indireceğinizi,</li>
+          <li>YouTube, Instagram, TikTok vb. platformların
+            <strong>kullanım şartlarını</strong> ihlal etmenin kendi
+            sorumluluğunuzda olduğunu,</li>
+          <li>Geliştiricinin bu yazılımın kullanımından doğacak hiçbir
+            <strong>hukuki sorumluluk</strong> kabul etmediğini</li>
+        </ul>
+        <p><strong>kabul etmiş sayılırsınız.</strong></p>
+      </div>
+      <div class="modal-actions">
+        <label class="checkbox-row">
+          <input type="checkbox" id="disclaimer-accept" />
+          <span>Okudum, anladım ve kabul ediyorum</span>
+        </label>
+        <button id="disclaimer-btn" class="btn btn-primary" disabled>
+          Devam Et
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main app container -->
+  <div id="app" class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <h1>🎬 ytGUI</h1>
+        <span class="version">v1.0.0</span>
+      </div>
+      <div class="header-right">
+        <button id="theme-toggle" class="btn btn-icon" title="Tema değiştir">
+          <span class="icon-sun">☀️</span>
+          <span class="icon-moon">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="main">
+      <!-- URL input -->
+      <section class="url-section">
+        <div class="input-group">
+          <input
+            type="url"
+            id="url-input"
+            class="input"
+            placeholder="YouTube, TikTok, Instagram video bağlantısı yapıştır..."
+            autocomplete="off"
+          />
+          <button id="fetch-btn" class="btn btn-primary">
+            🔍 Bilgi Getir
+          </button>
+        </div>
+        <p class="hint">yt-dlp'in desteklediği tüm platformlar çalışır</p>
+      </section>
+
+      <!-- Loading spinner -->
+      <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Video bilgisi alınıyor...</p>
+      </div>
+
+      <!-- Video info card -->
+      <section id="video-info" class="video-info hidden">
+        <div class="video-card">
+          <img id="thumbnail" class="thumbnail" src="" alt="Thumbnail" />
+          <div class="video-details">
+            <h2 id="video-title"></h2>
+            <p class="video-meta">
+              <span id="video-uploader"></span>
+              <span class="dot">•</span>
+              <span id="video-duration"></span>
+            </p>
+            <a id="video-link" href="#" target="_blank" class="video-link">
+              🔗 Kaynak sayfayı aç
+            </a>
+          </div>
+        </div>
+
+        <!-- Format selector -->
+        <div class="format-section">
+          <div class="format-row">
+            <label for="format-select">Format:</label>
+            <select id="format-select" class="select"></select>
+          </div>
+          <div class="format-row">
+            <label for="output-dir">Kayıt yeri:</label>
+            <div class="dir-group">
+              <input
+                type="text"
+                id="output-dir"
+                class="input"
+                readonly
+                placeholder="İndirme klasörü seç..."
+              />
+              <button id="dir-btn" class="btn btn-secondary">
+                📁 Seç
+              </button>
+            </div>
+          </div>
+          <button id="download-btn" class="btn btn-success btn-lg">
+            ⬇️ İndirmeyi Başlat
+          </button>
+        </div>
+      </section>
+
+      <!-- Download progress -->
+      <section id="progress-section" class="progress-section hidden">
+        <div class="progress-card">
+          <div class="progress-header">
+            <span id="progress-status-text">İndiriliyor...</span>
+            <span id="progress-percent">%0</span>
+          </div>
+          <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+          <div class="progress-details">
+            <span id="progress-speed"></span>
+            <span id="progress-eta"></span>
+            <span id="progress-size"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Download history -->
+      <section id="history-section" class="history-section">
+        <h3>📋 İndirme Geçmişi</h3>
+        <div id="history-list" class="history-list">
+          <p class="empty">Henüz indirme yapılmadı</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>
+        ⚠️ Bu yazılım eğitim amaçlıdır. Sadece indirme izniniz olan
+        içerikleri indirin. Geliştirici hiçbir hukuki sorumluluk kabul etmez.
+      </p>
+      <p class="footer-small">
+        Powered by <a href="https://github.com/yt-dlp/yt-dlp" target="_blank">yt-dlp</a>
+        &nbsp;|&nbsp; Built with <a href="https://tauri.app" target="_blank">Tauri</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module" src="/src/app.js"></script>
+</body>
+</html>

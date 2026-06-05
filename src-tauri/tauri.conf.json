@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicedoc/tauri-conf-schema/v2/tauri.conf.schema.json",
+  "productName": "ytGUI",
+  "version": "1.0.0",
+  "identifier": "com.ytgui.desktop",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "npx vite",
+    "beforeBuildCommand": "npx vite build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "ytGUI — YouTube Downloader",
+        "width": 900,
+        "height": 700,
+        "minWidth": 600,
+        "minHeight": 500,
+        "resizable": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/icon.png",
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png"
+    ]
+  }
+}
