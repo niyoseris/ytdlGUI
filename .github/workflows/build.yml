@@ -99,11 +99,12 @@ jobs:
       - name: Install Tauri CLI
         run: cargo install tauri-cli --version "^2"
 
-      - name: Build Tauri (msi)
-        run: cargo tauri build --bundles msi
+      - name: Build Tauri (nsis)
+        run: cargo tauri build --bundles nsis
 
-      - name: Upload MSI
+      - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
-          name: ytGUI-Windows-msi
-          path: src-tauri/target/release/bundle/msi/*.msi
+          name: ytGUI-Windows
+          path: |
+            src-tauri/target/release/bundle/nsis/*.exe
