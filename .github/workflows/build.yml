@@ -30,7 +30,7 @@ jobs:
         run: npm install
 
       - name: Build frontend
-        run: npx vite build
+        run: npx vite@5 build
 
       - name: Install Tauri CLI
         run: cargo install tauri-cli --version "^2"
@@ -62,7 +62,7 @@ jobs:
         run: npm install
 
       - name: Build frontend
-        run: npx vite build
+        run: npx vite@5 build
 
       - name: Install Tauri CLI
         run: cargo install tauri-cli --version "^2"
@@ -94,7 +94,7 @@ jobs:
         run: npm install
 
       - name: Build frontend
-        run: npx vite build
+        run: npx vite@5 build
 
       - name: Install Tauri CLI
         run: cargo install tauri-cli --version "^2"

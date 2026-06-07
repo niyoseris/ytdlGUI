@@ -6,8 +6,8 @@
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "npx vite",
-    "beforeBuildCommand": "npx vite build"
+    "beforeDevCommand": "cd .. && npx --yes vite@5",
+    "beforeBuildCommand": "cd .. && npx --yes vite@5 build"
   },
   "app": {
     "windows": [
