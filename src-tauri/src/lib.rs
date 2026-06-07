@@ -3,7 +3,7 @@ use serde::Serialize;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager};
 
 // ---------------------------------------------------------------------------
@@ -13,6 +13,7 @@ use tauri::{AppHandle, Emitter, Manager};
 struct AppState {
     ytdlp_path: Mutex<Option<PathBuf>>,
     ffmpeg_path: Mutex<Option<PathBuf>>,
+    active_download: Mutex<Option<std::process::Child>>,
 }
 
 // ---------------------------------------------------------------------------
@@ -534,6 +535,18 @@ async fn start_download(
     let stdout = child.stdout.take().unwrap();
     let stderr = child.stderr.take().unwrap();
 
+    // Store child in state so cancel_download can kill it
+    {
+        let state = app.state::<AppState>();
+        let mut download = state.active_download.lock().unwrap();
+        // Kill any previous download
+        if let Some(ref mut old) = *download {
+            let _ = old.kill();
+            let _ = old.wait();
+        }
+        *download = Some(child);
+    }
+
     // Read yt-dlp stdout on a background thread, emit progress events
     let app_stdout = app.clone();
     std::thread::spawn(move || {
@@ -612,10 +625,15 @@ async fn start_download(
             .ok();
     });
 
-    // Keep child alive — store in a leaked box so it lives until process ends
-    // (simplified: we just let the thread own the stdout; child exits when done)
+    // Waiter thread: clean up child from state when done
+    let app_waiter = app.clone();
     std::thread::spawn(move || {
-        let _ = child.wait();
+        let state = app_waiter.state::<AppState>();
+        let mut download = state.active_download.lock().unwrap();
+        if let Some(ref mut child) = *download {
+            let _ = child.wait();
+        }
+        *download = None;
     });
 
     Ok("İndirme başladı".into())
@@ -629,6 +647,30 @@ async fn pick_directory(app: AppHandle) -> Result<String, String> {
     match folder {
         Some(path) => Ok(path.to_string()),
         None => Err("Klasör seçilmedi".into()),
+    }
+}
+
+#[tauri::command]
+fn cancel_download(app: AppHandle) -> Result<String, String> {
+    let state = app.state::<AppState>();
+    let mut download = state.active_download.lock().unwrap();
+    if let Some(ref mut child) = *download {
+        child.kill().map_err(|e| format!("Durdurulamadı: {e}"))?;
+        *download = None;
+        app.emit(
+            "download-progress",
+            &DownloadProgress {
+                percent: 0.0,
+                speed: "—".into(),
+                eta: "—".into(),
+                total_size: "—".into(),
+                status: "cancelled".into(),
+            },
+        )
+        .ok();
+        Ok("İndirme durduruldu".into())
+    } else {
+        Err("Aktif indirme yok".into())
     }
 }
 
@@ -670,10 +712,12 @@ pub fn run() {
         .manage(AppState {
             ytdlp_path: Mutex::new(None),
             ffmpeg_path: Mutex::new(None),
+            active_download: Mutex::new(None),
         })
         .invoke_handler(tauri::generate_handler![
             fetch_video_info,
             start_download,
+            cancel_download,
             pick_directory,
             check_binaries,
         ])

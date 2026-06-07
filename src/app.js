@@ -35,6 +35,7 @@ const dom = {
   progressSpeed: $("#progress-speed"),
   progressEta: $("#progress-eta"),
   progressSize: $("#progress-size"),
+  cancelBtn: $("#cancel-btn"),
   historyList: $("#history-list"),
   toastContainer: $("#toast-container"),
 };
@@ -246,6 +247,7 @@ async function startDownload() {
   dom.downloadBtn.disabled = true;
   dom.downloadBtn.textContent = "⏳ İndiriliyor...";
   dom.progressSection.classList.remove("hidden");
+  dom.cancelBtn.classList.remove("hidden");
   dom.progressFill.style.width = "0%";
   dom.progressPercent.textContent = "%0";
   dom.progressSpeed.textContent = "";
@@ -271,9 +273,21 @@ function resetDownload() {
   isDownloading = false;
   dom.downloadBtn.disabled = false;
   dom.downloadBtn.textContent = "⬇️ İndirmeyi Başlat";
+  dom.cancelBtn.classList.add("hidden");
+}
+
+async function cancelDownload() {
+  try {
+    await invoke("cancel_download");
+    toast("İndirme durduruldu", "warning");
+    resetDownload();
+  } catch (err) {
+    toast(`Durdurulamadı: ${err}`, "error");
+  }
 }
 
 dom.downloadBtn.addEventListener("click", startDownload);
+dom.cancelBtn.addEventListener("click", cancelDownload);
 
 // ===================================================================
 // Enter → fetch
@@ -315,6 +329,12 @@ function updateProgressUI(p) {
       if (currentVideoInfo) {
         addToHistory(currentVideoInfo.title, currentVideoInfo.webpage_url, "done");
       }
+      resetDownload();
+      break;
+    case "cancelled":
+      dom.progressStatusText.textContent = "⏹ Durduruldu";
+      dom.progressFill.style.width = "0%";
+      dom.progressPercent.textContent = "%0";
       resetDownload();
       break;
     case "error":

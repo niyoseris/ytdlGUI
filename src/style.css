@@ -224,6 +224,16 @@ body {
   background: var(--success-hover);
 }
 
+.btn-cancel {
+  width: 100%;
+  margin-top: 10px;
+  background: #ff6f00;
+  color: #fff;
+}
+.btn-cancel:hover:not(:disabled) {
+  background: #e65100;
+}
+
 .btn-lg {
   padding: 14px 28px;
   font-size: 1rem;
