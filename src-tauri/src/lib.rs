@@ -3,7 +3,7 @@ use serde::Serialize;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager};
 
 // ---------------------------------------------------------------------------
@@ -250,6 +250,7 @@ async fn download_ffmpeg(app: &AppHandle) -> Result<PathBuf, String> {
 }
 
 /// Recursively find a file by name in a directory
+#[allow(dead_code)]
 fn find_file(dir: &PathBuf, name: &str) -> Option<PathBuf> {
     if let Ok(entries) = std::fs::read_dir(dir) {
         for entry in entries.flatten() {
